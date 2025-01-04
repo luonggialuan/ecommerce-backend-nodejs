@@ -12,7 +12,13 @@ const STATUS = {
   PENDING: 'pending'
 }
 
+const HEADER = {
+  API_KEY: 'x-api-key',
+  AUTHORIZATION: 'authorization'
+}
+
 module.exports = {
   ROLE_SHOP,
-  STATUS
+  STATUS,
+  HEADER
 }
