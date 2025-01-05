@@ -1,12 +1,12 @@
 'use strict'
 
-const { STATUS_CODE, REASON_STATUS_CODE } = require('../configs/constants')
+const { ReasonPhrases, StatusCodes } = require('http-status-codes')
 
 class SuccessResponse {
   constructor({
     message,
-    statusCode = STATUS_CODE.OK,
-    reasonStatusCode = REASON_STATUS_CODE.OK,
+    statusCode = StatusCodes.OK,
+    reasonStatusCode = ReasonPhrases.OK,
     metadata = {}
   }) {
     this.message = !message ? reasonStatusCode : message
@@ -19,23 +19,23 @@ class SuccessResponse {
   }
 }
 
-const OK = ({ message = REASON_STATUS_CODE.OK, metadata = {} }) => {
+const OK = ({ message = ReasonPhrases.OK, metadata = {} }) => {
   return new SuccessResponse({
     message,
     metadata,
-    statusCode: STATUS_CODE.OK
+    statusCode: StatusCodes.OK
   })
 }
 
 const CREATED = ({
-  message = REASON_STATUS_CODE.CREATED,
+  message = ReasonPhrases.CREATED,
   metadata = {},
   options = {}
 }) => {
   const res = new SuccessResponse({
     message,
     metadata,
-    statusCode: STATUS_CODE.CREATED
+    statusCode: StatusCodes.CREATED
   })
 
   const response = { ...res }

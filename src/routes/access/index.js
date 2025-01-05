@@ -6,6 +6,7 @@ const catchAsync = require('../../utils/catchAsync')
 const router = express.Router()
 
 // signin
-router.post('/shop/sign-up', catchAsync(accessController.signUp))
+router.post('/shop/signup', catchAsync(accessController.signUp))
+router.post('/shop/login', catchAsync(accessController.login))
 
 module.exports = router
