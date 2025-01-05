@@ -11,6 +11,11 @@ const { BadRequestError, AuthFailureError } = require('../core/error.response')
 const { findByEmail } = require('./shop.service')
 
 class AccessService {
+  static logout = async (keyStore) => {
+    const delKey = KeyTokenService.removeKeyById(keyStore._id)
+    return delKey
+  }
+
   static login = async ({ email, password, refreshToken = null }) => {
     // 1. check emailin dbs
     const foundShop = await findByEmail({ email })

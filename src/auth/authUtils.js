@@ -1,6 +1,10 @@
 'use strict'
 
 const JWT = require('jsonwebtoken')
+const catchAsync = require('../helpers/catchAsync')
+const { HEADER } = require('../configs/constants')
+const { AuthFailureError, NotFoundError } = require('../core/error.response')
+const { finByUserId } = require('../services/keyToken.service')
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
   try {
@@ -36,6 +40,32 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
   } catch (error) {}
 }
 
+const authentication = catchAsync(async (req, res, next) => {
+  // 1. check userId missing?
+  const userId = req.headers[HEADER.CLIENT_ID]
+  if (!userId) throw new AuthFailureError('Invalid Request')
+
+  // 2. get accessToken
+  const keyStore = await finByUserId(userId)
+  if (!keyStore) throw new NotFoundError('Not found keyStore')
+
+  // 3. Verify Token
+  const accessToken = req.headers[HEADER.AUTHORIZATION]
+  if (!accessToken) throw new AuthFailureError('Invalid Request')
+
+  try {
+    const decodeUser = JWT.verify(accessToken, keyStore.publicKey)
+    if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid User')
+
+    req.keyStore = keyStore
+
+    return next()
+  } catch (error) {
+    throw error
+  }
+})
+
 module.exports = {
-  createTokenPair
+  createTokenPair,
+  authentication
 }
