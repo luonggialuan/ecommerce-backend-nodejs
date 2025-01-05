@@ -7,6 +7,7 @@ const KeyTokenService = require('./keyToken.service')
 const { ROLE_SHOP } = require('../configs/constants')
 const { createTokenPair } = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
+const { BadRequestError } = require('../core/error.response')
 
 class AccessService {
   static signUp = async ({ name, email, password }) => {
@@ -15,10 +16,7 @@ class AccessService {
       const hoderShop = await shopModel.findOne({ email }).lean()
 
       if (hoderShop) {
-        return {
-          code: 'xxx',
-          message: 'Email already exist'
-        }
+        throw new BadRequestError('Email already registered!')
       }
 
       const passwordHash = await bcrypt.hash(password, 10)
