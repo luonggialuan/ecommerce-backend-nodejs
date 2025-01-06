@@ -5,12 +5,68 @@ const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const KeyTokenService = require('./keyToken.service')
 const { ROLE_SHOP } = require('../configs/constants')
-const { createTokenPair } = require('../auth/authUtils')
+const { createTokenPair, verifyJWT } = require('../auth/authUtils')
 const { getInfoData } = require('../utils')
-const { BadRequestError, AuthFailureError } = require('../core/error.response')
+const {
+  BadRequestError,
+  AuthFailureError,
+  ForbiddenError
+} = require('../core/error.response')
 const { findByEmail } = require('./shop.service')
 
 class AccessService {
+  static handlerRefreshToken = async (refreshToken) => {
+    // check token used
+    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+      refreshToken
+    )
+
+    // check refreshToken already use or not
+    if (foundToken) {
+      const { userId, email } = await verifyJWT(
+        refreshToken,
+        foundToken.privateKey
+      )
+
+      await KeyTokenService.deleteKeyByUderId(userId)
+      throw new ForbiddenError('Something went wrong! Please login again!')
+    }
+
+    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken)
+    if (!holderToken) throw new AuthFailureError('Shop not registered 1')
+
+    // verify token
+    const { userId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey
+    )
+
+    // check userId
+    const foundShop = await findByEmail({ email })
+    if (!foundShop) throw new AuthFailureError('Shop not registered 2')
+
+    // create new tokens
+    const tokens = await createTokenPair(
+      { userId, email },
+      holderToken.publicKey,
+      holderToken.privateKey
+    )
+
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken
+      }
+    })
+
+    return {
+      user: { userId, email },
+      tokens
+    }
+  }
+
   static logout = async (keyStore) => {
     const delKey = KeyTokenService.removeKeyById(keyStore._id)
     return delKey
