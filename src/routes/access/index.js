@@ -2,7 +2,7 @@
 const express = require('express')
 const accessController = require('../../controllers/access.controller')
 const catchAsync = require('../../helpers/catchAsync')
-const { authentication } = require('../../auth/authUtils')
+const { authenticationV2 } = require('../../auth/authUtils')
 
 const router = express.Router()
 
@@ -11,7 +11,7 @@ router.post('/shop/signup', catchAsync(accessController.signUp))
 router.post('/shop/login', catchAsync(accessController.login))
 
 //* authentication *//
-router.use(authentication)
+router.use(authenticationV2)
 
 router.post('/shop/logout', catchAsync(accessController.logout))
 router.post(

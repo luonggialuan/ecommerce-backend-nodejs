@@ -37,7 +37,14 @@ const STATUS = {
 const HEADER = {
   API_KEY: 'x-api-key',
   CLIENT_ID: 'x-client-id',
-  AUTHORIZATION: 'authorization'
+  AUTHORIZATION: 'authorization',
+  REFRESHTOKEN: 'x-rtoken-id'
+}
+
+const PRODUCT_TYPE = {
+  ELECTRONICS: 'Electronics',
+  CLOTHING: 'Clothing',
+  FURNITURE: 'Furniture'
 }
 
 module.exports = {
@@ -45,5 +52,6 @@ module.exports = {
   STATUS,
   HEADER,
   STATUS_CODE,
-  REASON_STATUS_CODE
+  REASON_STATUS_CODE,
+  PRODUCT_TYPE
 }
