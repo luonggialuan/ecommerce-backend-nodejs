@@ -5,19 +5,36 @@ const { BadRequestError } = require('../core/error.response')
 const {
   productModel,
   clothingModel,
-  electronicModel
+  electronicModel,
+  furnitureModel
 } = require('../models/product.model')
 
 class ProductFactory {
+  // Only Factory Pattern
+  //   static async createProduct(type, payload) {
+  //     switch (type) {
+  //       case PRODUCT_TYPE.CLOTHING:
+  //         return new Clothing(payload).createProduct()
+  //       case PRODUCT_TYPE.ELECTRONICS:
+  //         return new Electronics(payload).createProduct()
+  //       default:
+  //         throw new BadRequestError(`Invalid Product Types ${type}`)
+  //     }
+  //   }
+
+  // Factory and Strategy Pattern
+  static productRegistry = {} // key-class
+
+  static registerProductType(type, classRef) {
+    ProductFactory.productRegistry[type] = classRef
+  }
+
   static async createProduct(type, payload) {
-    switch (type) {
-      case PRODUCT_TYPE.CLOTHING:
-        return new Clothing(payload).createProduct()
-      case PRODUCT_TYPE.ELECTRONICS:
-        return new Electronics(payload).createProduct()
-      default:
-        throw new BadRequestError(`Invalid Product Types ${type}`)
-    }
+    const productClass = ProductFactory.productRegistry[type]
+    if (!productClass)
+      throw new BadRequestError(`Invalid Product Types ${type}`)
+
+    return new productClass(payload).createProduct()
   }
 }
 
@@ -80,5 +97,25 @@ class Electronics extends Product {
     return newProduct
   }
 }
+
+// Define sub-class for different product type Furnitures
+class Furnitures extends Product {
+  async createProduct() {
+    const newFurniture = await furnitureModel.create({
+      ...this.product_attributes,
+      product_shop: this.product_shop
+    })
+    if (!newFurniture) throw new BadRequestError('Create new Furniture error')
+
+    const newProduct = await super.createProduct(newFurniture._id)
+    if (!newProduct) throw new BadRequestError('Create new Product error')
+
+    return newProduct
+  }
+}
+
+ProductFactory.registerProductType('Clothing', Clothing)
+ProductFactory.registerProductType('Electronics', Electronics)
+ProductFactory.registerProductType('Furnitures', Furnitures)
 
 module.exports = ProductFactory

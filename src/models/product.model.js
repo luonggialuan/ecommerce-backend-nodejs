@@ -13,6 +13,9 @@ const COLLECTION_CLOTHING = 'Clothes'
 const DOCUMENT_ELECTRONICS = 'Electronics'
 const COLLECTION_ELECTRONICS = 'Electronics'
 
+const DOCUMENT_FURNITURES = 'Furniture'
+const COLLECTION_FURNITURES = 'Furnitures'
+
 const productChema = new Schema(
   {
     product_name: {
@@ -94,8 +97,28 @@ const electronicsSchema = new Schema(
   }
 )
 
+const furnituresSchema = new Schema(
+  {
+    brand: {
+      type: String,
+      required: true
+    },
+    size: String,
+    material: String,
+    product_shop: {
+      type: Schema.Types.ObjectId,
+      ref: shopModel.collection.name
+    }
+  },
+  {
+    collection: COLLECTION_CLOTHING,
+    timestamps: true
+  }
+)
+
 module.exports = {
   productModel: model(DOCUMENT_NAME, productChema),
   clothingModel: model(DOCUMENT_CLOTHING, clothingSchema),
-  electronicModel: model(DOCUMENT_ELECTRONICS, electronicsSchema)
+  electronicModel: model(DOCUMENT_ELECTRONICS, electronicsSchema),
+  furnitureModel: model(DOCUMENT_FURNITURES, furnituresSchema)
 }
