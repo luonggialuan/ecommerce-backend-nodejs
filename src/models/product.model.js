@@ -3,6 +3,7 @@
 const { model, Schema } = require('mongoose') // Erase if already required
 const { PRODUCT_TYPE } = require('../configs/constants')
 const shopModel = require('./shop.model')
+const slugify = require('slugify')
 
 const DOCUMENT_NAME = 'Product'
 const COLLECTION_NAME = 'Products'
@@ -27,6 +28,7 @@ const productChema = new Schema(
       required: true
     },
     product_description: String,
+    product_slug: String,
     product_price: {
       type: Number,
       required: true
@@ -46,11 +48,34 @@ const productChema = new Schema(
     },
     product_shop: {
       type: Schema.Types.ObjectId,
-      ref: shopModel.collection.name
+      ref: 'Shop'
     },
     product_attributes: {
       type: Schema.Types.Mixed,
       required: true
+    },
+    product_ratingsAverage: {
+      type: Number,
+      default: 4.5,
+      min: [1, 'Rating must be above 1.0'],
+      max: [5, 'Rating must be less than 5.0'],
+      set: (val) => Math.round(val * 10) / 10
+    },
+    product_variations: {
+      type: Array,
+      default: []
+    },
+    isDraft: {
+      type: Boolean,
+      default: true,
+      index: true,
+      select: false
+    },
+    isPublished: {
+      type: Boolean,
+      default: false,
+      index: true,
+      select: false
     }
   },
   {
@@ -58,6 +83,14 @@ const productChema = new Schema(
     timestamps: true
   }
 )
+
+// Create index for search
+productChema.index({ product_name: 'text', productChema: 'text' })
+// Document middleware: runs before .save() and .create()
+productChema.pre('save', function (next) {
+  this.product_slug = slugify(this.product_name, { lower: true })
+  next()
+})
 
 const clothingSchema = new Schema(
   {
@@ -69,7 +102,7 @@ const clothingSchema = new Schema(
     material: String,
     product_shop: {
       type: Schema.Types.ObjectId,
-      ref: shopModel.collection.name
+      ref: 'Shop'
     }
   },
   {
@@ -88,7 +121,7 @@ const electronicsSchema = new Schema(
     color: String,
     product_shop: {
       type: Schema.Types.ObjectId,
-      ref: shopModel.collection.name
+      ref: 'Shop'
     }
   },
   {
@@ -107,11 +140,11 @@ const furnituresSchema = new Schema(
     material: String,
     product_shop: {
       type: Schema.Types.ObjectId,
-      ref: shopModel.collection.name
+      ref: 'Shop'
     }
   },
   {
-    collection: COLLECTION_CLOTHING,
+    collection: COLLECTION_FURNITURES,
     timestamps: true
   }
 )
