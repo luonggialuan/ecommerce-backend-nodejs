@@ -19,6 +19,7 @@ const {
   updateProductById
 } = require('../models/repositories/product.repo')
 const { removeUndefinedObject, updateNestedObjectParser } = require('../utils')
+const { insertInventory } = require('../models/repositories/inventory.repo')
 
 class ProductFactory {
   // Only Factory Pattern
@@ -124,7 +125,18 @@ class Product {
 
   // create new product
   async createProduct(product_id) {
-    return await productModel.create({ ...this, _id: product_id })
+    const newProduct = await productModel.create({ ...this, _id: product_id })
+
+    if (newProduct) {
+      // add product_stock in inventory
+      await insertInventory({
+        productId: newProduct._id,
+        shopId: this.product_shop,
+        stock: this.product_quantity
+      })
+    }
+
+    return newProduct
   }
 
   async updateProduct(productId, bodyUpdate) {
