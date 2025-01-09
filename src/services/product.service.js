@@ -12,7 +12,9 @@ const {
   queryProduct,
   publishProductByShop,
   unPublishProductByShop,
-  searchProductByUser
+  searchProductByUser,
+  findAllProduct,
+  findProduct
 } = require('../models/repositories/product.repo')
 
 class ProductFactory {
@@ -43,6 +45,8 @@ class ProductFactory {
     return new productClass(payload).createProduct()
   }
 
+  static async updateProduct(type, payload) {}
+
   // PUT //
   static async publishProductByShop({ product_shop, product_id }) {
     return await publishProductByShop({ product_shop, product_id })
@@ -66,6 +70,25 @@ class ProductFactory {
 
   static async searchProduct({ keySearch }) {
     return await searchProductByUser({ keySearch })
+  }
+
+  static async findAllProduct({
+    limit = 50,
+    sort = 'ctime',
+    page = 1,
+    filter = { isPublished: true }
+  }) {
+    return await findAllProduct({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ['product_name', 'product_price', 'product_thumb']
+    })
+  }
+
+  static async findProduct({ product_id }) {
+    return await findProduct({ product_id, unselect: ['__v'] })
   }
 }
 
@@ -147,6 +170,6 @@ class Furnitures extends Product {
 
 ProductFactory.registerProductType('Clothing', Clothing)
 ProductFactory.registerProductType('Electronics', Electronics)
-ProductFactory.registerProductType('Furnitures', Furnitures)
+ProductFactory.registerProductType('Furniture', Furnitures)
 
 module.exports = ProductFactory
