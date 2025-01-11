@@ -12,7 +12,7 @@ const app = express()
 app.use(morgan('dev'))
 app.use(helmet())
 app.use(compression())
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 // init db
 require('./dbs/init.mongodb')
@@ -21,7 +21,7 @@ require('./dbs/init.mongodb')
 app.use('/', require('./routes'))
 
 // handling not-found route
-app.all('*', notFoundHandler)
+app.use(notFoundHandler)
 
 // handling errors
 app.use(errorHandler)
