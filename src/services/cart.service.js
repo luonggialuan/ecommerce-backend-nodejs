@@ -45,7 +45,15 @@ class CartService {
       return await userCart.save()
     }
 
-    return await this.updateUserCartQuantity({ userId, product })
+    const existingProduct = userCart.cart_products.find(
+      (item) => item.productId.toString() === product.productId.toString()
+    )
+
+    if (existingProduct)
+      return await this.updateUserCartQuantity({ userId, product })
+
+    userCart.cart_products.push(product)
+    return await userCart.save()
   }
 
   /*
