@@ -14,8 +14,24 @@ app.use(helmet())
 app.use(compression())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
+
 // init db
 require('./dbs/init.mongodb')
+const { initRedis } = require('./dbs/init.redis')
+
+;(async () => {
+  try {
+    await initRedis()
+    console.log('Redis initialized successfully')
+  } catch (error) {
+    console.error('Failed to initialize Redis:', error)
+    process.exit(1) // Exit the app if Redis fails to initialize
+  }
+})()
+// test pub sub redis
+// require('./tests/inventory.test')
+// const productTest = require('./tests/product.test')
+// productTest.purchaseProduct('product:001', 10)
 
 // init routes
 app.use('/', require('./routes'))
