@@ -10,6 +10,7 @@ const router = express.Router()
 router.use(authenticationV2)
 
 router.get('', catchAsync(commentController.getCommentsByParentId))
+router.delete('', catchAsync(commentController.deleteComments))
 router.post('', catchAsync(commentController.createComment))
 
 module.exports = router

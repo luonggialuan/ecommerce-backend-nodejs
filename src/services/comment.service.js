@@ -2,6 +2,7 @@
 
 const { NotFoundError } = require('../core/error.response')
 const commentModel = require('../models/comment.model')
+const { findProduct } = require('../models/repositories/product.repo')
 const { convertToObjectIdMongodb } = require('../utils')
 
 /*
@@ -115,6 +116,47 @@ class CommentService {
       .sort({ comment_left: 1 })
 
     return comments
+  }
+
+  // delete comments
+  static async deleteComments({ commentId, productId }) {
+    // check the product exist in the database
+    const foundProduct = await findProduct({ product_id: productId })
+
+    if (!foundProduct) throw new NotFoundError('Product not found!')
+
+    // xác định left and right of comment
+    const comment = await commentModel.findById(commentId)
+    if (!comment) throw new NotFoundError('Comment not found!')
+
+    const leftValue = comment.comment_left
+    const rightValue = comment.comment_right
+    const width = rightValue - leftValue + 1
+
+    // delete comments
+    await commentModel.deleteMany({
+      comment_productId: convertToObjectIdMongodb(productId),
+      comment_left: { $gte: leftValue, $lte: rightValue }
+    })
+
+    // cập nhật giá trị left và right còn lại
+    await commentModel.updateMany(
+      {
+        comment_productId: convertToObjectIdMongodb(productId),
+        comment_right: { $gt: rightValue }
+      },
+      { $inc: { comment_right: -width } }
+    )
+
+    await commentModel.updateMany(
+      {
+        comment_productId: convertToObjectIdMongodb(productId),
+        comment_left: { $gt: rightValue }
+      },
+      { $inc: { comment_left: -width } }
+    )
+
+    return
   }
 }
 
