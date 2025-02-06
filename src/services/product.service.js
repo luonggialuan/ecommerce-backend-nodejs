@@ -20,6 +20,7 @@ const {
 } = require('../models/repositories/product.repo')
 const { removeUndefinedObject, updateNestedObjectParser } = require('../utils')
 const { insertInventory } = require('../models/repositories/inventory.repo')
+const { pushNotiToSystem } = require('./notification.service')
 
 class ProductFactory {
   // Only Factory Pattern
@@ -134,6 +135,18 @@ class Product {
         shopId: this.product_shop,
         stock: this.product_quantity
       })
+
+      pushNotiToSystem({
+        type: 'SHOP-001',
+        receivedId: 1,
+        senderId: this.product_shop,
+        options: {
+          product_name: this.product_name,
+          shop_name: this.product_shop
+        }
+      })
+        .then((res) => console.log(res))
+        .catch(console.error)
     }
 
     return newProduct
